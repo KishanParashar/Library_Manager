@@ -2,9 +2,16 @@
 
 import { useState } from "react";
 import AddSeatsModal from "./AddSeatsModal";
+import AddPlanModal from "./AddPlanModal";
 
-export default function DashboardHeader({ library }) {
-  const [open, setOpen] = useState(false);
+export default function DashboardHeader({
+  library,
+  plans,
+  activePlanId,
+  onPlanChange,
+}) {
+  const [openSeats, setOpenSeats] = useState(false);
+  const [openPlan, setOpenPlan] = useState(false);
 
   return (
     <>
@@ -16,19 +23,57 @@ export default function DashboardHeader({ library }) {
           </p>
         </div>
 
-        <button
-          onClick={() => setOpen(true)}
-          className="bg-blue-600 cursor-pointer text-white px-4 py-2 rounded-lg"
-        >
-          + Add Seats
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setOpenPlan(true)}
+            className="bg-purple-600 text-white px-4 py-2 rounded-lg"
+          >
+            + Add Plan
+          </button>
+
+          <button
+            onClick={() => setOpenSeats(true)}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+          >
+            + Add Seats
+          </button>
+        </div>
       </div>
 
-      {open && (
+      <div className="flex gap-2 overflow-x-auto pb-3 mb-6">
+        {plans.length === 0 ? (
+          <p className="text-gray-500">No plans created yet</p>
+        ) : (
+          plans.map((plan) => (
+            <button
+              key={plan._id}
+              onClick={() => onPlanChange(plan._id)}
+              className={`px-4 py-2 rounded-full border whitespace-nowrap transition ${activePlanId === plan._id
+                  ? "bg-blue-600 text-white border-blue-600"
+                  : "bg-white hover:bg-gray-100"
+                }`}
+            >
+              {plan.name} ({plan.startTime}-{plan.endTime})
+            </button>
+          ))
+        )}
+      </div>
+
+      {openSeats && (
         <AddSeatsModal
-          onClose={() => setOpen(false)}
+          onClose={() => setOpenSeats(false)}
           onSuccess={() => {
-            setOpen(false);
+            setOpenSeats(false);
+            window.location.reload();
+          }}
+        />
+      )}
+
+      {openPlan && (
+        <AddPlanModal
+          onClose={() => setOpenPlan(false)}
+          onSuccess={() => {
+            setOpenPlan(false);
             window.location.reload();
           }}
         />

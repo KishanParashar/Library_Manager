@@ -19,6 +19,7 @@ export default function DashboardClient({
             <DashboardHeader
                 library={library}
                 plans={plans}
+                seats={seats}
                 activePlanId={activePlanId}
                 onPlanChange={setActivePlanId}
             />
@@ -26,6 +27,7 @@ export default function DashboardClient({
             <SeatGrid
                 seats={seats}
                 bookings={bookings}
+                plans={plans}
                 activePlanId={activePlanId}
             />
         </div>

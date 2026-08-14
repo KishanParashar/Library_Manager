@@ -16,6 +16,10 @@ const SeatSchema = new mongoose.Schema(
       enum: ["available", "occupied", "blocked"],
       default: "available",
     },
+    isAvailable: {
+      type: Boolean,
+      default: true,
+    },
     studentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Student",

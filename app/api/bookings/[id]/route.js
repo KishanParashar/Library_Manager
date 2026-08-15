@@ -96,19 +96,27 @@ export async function PUT(request, { params }) {
             }
         }
 
-        booking.seatId = seatId;
-        booking.planId = planId;
-        booking.studentName = studentName;
-        booking.phone = phone;
-        booking.startTime = plan.startTime;
-        booking.endTime = plan.endTime;
-
-        await booking.save();
+        const updatedBooking = await Booking.findByIdAndUpdate(
+            id,
+            {
+                seatId,
+                planId,
+                studentName,
+                phone,
+                monthlyFee: plan.monthlyFee,
+                startTime: plan.startTime,
+                endTime: plan.endTime,
+            },
+            {
+                new: true,
+                runValidators: false,
+            }
+        );
 
         return Response.json({
             success: true,
             message: "Booking updated successfully",
-            booking,
+            booking: updatedBooking,
         });
     } catch (error) {
         console.error(error);

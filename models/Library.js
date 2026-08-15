@@ -5,7 +5,7 @@ const LibrarySchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
-      
+
     },
     ownerName: {
       type: String,
@@ -19,6 +19,14 @@ const LibrarySchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
+    },
+
+    resetPasswordToken: {
+      type: String,
+    },
+
+    resetPasswordExpires: {
+      type: Date,
     },
 
     totalSeats: {

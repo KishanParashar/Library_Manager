@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -32,17 +33,19 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <form
         onSubmit={handleSubmit}
-        className="border p-6 rounded-lg w-80 space-y-4"
+        className="bg-white border p-6 rounded-xl shadow-md w-80 space-y-4"
       >
-        <h1 className="text-2xl font-bold text-center">Login</h1>
+        <h1 className="text-2xl font-bold text-center">
+          Login
+        </h1>
 
         <input
           type="email"
           placeholder="Email"
-          className="border p-2 w-full"
+          className="border p-2 w-full rounded"
           value={form.email}
           onChange={(e) =>
             setForm({ ...form, email: e.target.value })
@@ -52,15 +55,24 @@ export default function LoginPage() {
         <input
           type="password"
           placeholder="Password"
-          className="border p-2 w-full"
+          className="border p-2 w-full rounded"
           value={form.password}
           onChange={(e) =>
             setForm({ ...form, password: e.target.value })
           }
         />
 
+        <div className="text-right">
+          <Link
+            href="/forgot-password"
+            className="text-sm text-blue-600 hover:underline"
+          >
+            Forgot Password?
+          </Link>
+        </div>
+
         <button
-          className="w-full bg-black text-white py-2 rounded"
+          className="w-full bg-black text-white py-2 rounded hover:bg-gray-800"
           type="submit"
         >
           Login

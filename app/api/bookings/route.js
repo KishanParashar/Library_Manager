@@ -88,7 +88,9 @@ export async function POST(request) {
       planId,
       studentName,
       phone,
-     
+
+      monthlyFee: plan.monthlyFee,
+
       startTime: plan.startTime,
       endTime: plan.endTime,
     });

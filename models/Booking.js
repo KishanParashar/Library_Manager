@@ -32,7 +32,27 @@ const BookingSchema = new mongoose.Schema(
       trim: true,
     },
 
-   
+    monthlyFee: {
+      type: Number,
+      default:0,
+    },
+
+    paymentStatus: {
+      type: String,
+      enum: ["paid", "unpaid"],
+      default: "unpaid",
+    },
+
+    lastPaidMonth: {
+      type: String,
+      default: null,
+    },
+
+    lastPaidDate: {
+      type: Date,
+      default: null,
+    },
+
 
     joinDate: {
       type: Date,

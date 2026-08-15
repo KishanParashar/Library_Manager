@@ -25,9 +25,9 @@ export default function SeatGrid({
   // Find booking for a seat in the currently active plan
   function getSeatState(seatId) {
     const seatBookings = bookings.filter(
-      (b) => String(b.seatId) === String(seatId)
+      (b) =>
+        String(b.seatId?._id || b.seatId) === String(seatId)
     );
-
     // Exact booking in current plan -> RED
     const exactBooking = seatBookings.find(
       (b) =>

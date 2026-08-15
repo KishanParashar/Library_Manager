@@ -127,6 +127,7 @@ export default async function DashboardPage({ searchParams }) {
             phone: b.phone,
             planName: b.planId?.name || "Plan",
             monthlyFee: b.monthlyFee || b.planId?.monthlyFee || 0,
+            reminderHistory: b.reminderHistory || [],
         }));
 
     const libraryData = JSON.parse(JSON.stringify(library));

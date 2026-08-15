@@ -34,7 +34,7 @@ const BookingSchema = new mongoose.Schema(
 
     monthlyFee: {
       type: Number,
-      default:0,
+      default: 0,
     },
 
     paymentStatus: {
@@ -46,6 +46,10 @@ const BookingSchema = new mongoose.Schema(
     lastPaidMonth: {
       type: String,
       default: null,
+    },
+    reminderHistory: {
+      type: [String],
+      default: [],
     },
 
     lastPaidDate: {

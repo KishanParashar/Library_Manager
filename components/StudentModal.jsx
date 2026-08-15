@@ -57,13 +57,17 @@ export default function StudentModal({
           />
 
           <input
-            type="text"
+            type="tel"
             placeholder="Phone Number"
             className="border w-full p-2 rounded"
             value={form.phone}
             onChange={(e) =>
-              setForm({ ...form, phone: e.target.value })
+              setForm({
+                ...form,
+                phone: e.target.value.replace(/\D/g, ""),
+              })
             }
+            maxLength={10}
           />
 
           <div className="flex justify-end gap-2 pt-2">

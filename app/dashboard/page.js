@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import SeatGrid from "@/components/SeatGrid";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";

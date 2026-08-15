@@ -1,17 +1,16 @@
 "use client";
 
+import { Suspense, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useState } from "react";
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
   const token = searchParams.get("token");
 
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] =
-    useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e) {
@@ -54,18 +53,13 @@ export default function ResetPasswordPage() {
           Reset Password
         </h1>
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-4"
-        >
+        <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="password"
             placeholder="New Password"
             className="border w-full p-3 rounded"
             value={password}
-            onChange={(e) =>
-              setPassword(e.target.value)
-            }
+            onChange={(e) => setPassword(e.target.value)}
           />
 
           <input
@@ -73,9 +67,7 @@ export default function ResetPasswordPage() {
             placeholder="Confirm Password"
             className="border w-full p-3 rounded"
             value={confirmPassword}
-            onChange={(e) =>
-              setConfirmPassword(e.target.value)
-            }
+            onChange={(e) => setConfirmPassword(e.target.value)}
           />
 
           <button
@@ -83,12 +75,18 @@ export default function ResetPasswordPage() {
             disabled={loading}
             className="w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700"
           >
-            {loading
-              ? "Updating..."
-              : "Reset Password"}
+            {loading ? "Updating..." : "Reset Password"}
           </button>
         </form>
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }

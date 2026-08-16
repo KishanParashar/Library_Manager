@@ -1,5 +1,6 @@
 import { connectDB } from "@/lib/mongodb";
 import Booking from "@/models/Booking";
+import Plan from "@/models/Plan";
 import jwt from "jsonwebtoken";
 import Payment from "@/models/Payment";
 

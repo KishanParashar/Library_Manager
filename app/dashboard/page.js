@@ -12,6 +12,7 @@ import Plan from "@/models/Plan";
 import DashboardClient from "@/components/DashboardClient";
 import Booking from "@/models/Booking";
 import Payment from "@/models/Payment";
+import Offer from "@/models/Offer";
 
 export default async function DashboardPage({ searchParams }) {
     await connectDB();
@@ -56,6 +57,13 @@ export default async function DashboardPage({ searchParams }) {
         libraryId: library._id,
     }).sort({ startTime: 1 }).lean();
 
+    const offers = await Offer.find({
+        libraryId: library._id,
+    })
+        .populate("planId")
+        .sort({ createdAt: -1 })
+        .lean();
+
     const now = new Date();
     const defaultMonth = `${now.getFullYear()}-${String(
         now.getMonth() + 1
@@ -71,32 +79,53 @@ export default async function DashboardPage({ searchParams }) {
         .populate("seatId")
         .lean();
 
-    const payments = await Payment.find({
+    // Payments actually received in the selected month
+    const receivedPayments = await Payment.find({
         libraryId: library._id,
         month: selectedMonth,
     }).lean();
 
-    // const now = new Date();
-    const currentMonth = `${now.getFullYear()}-${String(
-        now.getMonth() + 1
-    ).padStart(2, "0")}`;
+    // Payments that cover the selected month
+    const coveringPayments = await Payment.find({
+        libraryId: library._id,
+        $or: [
+            // Existing + new monthly payments
+            {
+                $or: [
+                    { paymentType: "monthly" },
+                    { paymentType: { $exists: false } },
+                ],
+                month: selectedMonth,
+            },
+
+            // Offer payments
+            {
+                paymentType: "offer",
+                startMonth: { $lte: selectedMonth },
+                endMonth: { $gte: selectedMonth },
+            },
+        ],
+    }).lean();
 
     const totalStudents = bookings.length;
 
-    // Kitni unique bookings ne payment ki
+    // Students whose selected month is covered
     const paidBookingIds = new Set(
-        payments.map((p) => String(p.bookingId))
+        coveringPayments.map((p) => String(p.bookingId))
     );
 
     const paidStudents = paidBookingIds.size;
 
-    const unpaidStudents = totalStudents - paidStudents;
+    const unpaidStudents =
+        totalStudents - paidStudents;
 
-    const totalCollection = payments.reduce(
+    // IMPORTANT:
+    // Collection only counts money actually received
+    // in the selected month.
+    const totalCollection = receivedPayments.reduce(
         (sum, p) => sum + (p.amount || 0),
         0
     );
-
     const pendingCollection = bookings
         .filter(
             (b) =>
@@ -136,6 +165,7 @@ export default async function DashboardPage({ searchParams }) {
     const seatsData = JSON.parse(JSON.stringify(seats));
     const bookingsData = JSON.parse(JSON.stringify(bookings));
     const pendingStudentsData = JSON.parse(JSON.stringify(pendingStudents));
+    const offersData = JSON.parse(JSON.stringify(offers));
 
 
     return (
@@ -147,6 +177,7 @@ export default async function DashboardPage({ searchParams }) {
             stats={stats}
             pendingStudents={pendingStudentsData}
             selectedMonth={selectedMonth}
+            offers={offersData}
         />
     );
 }

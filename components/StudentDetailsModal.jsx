@@ -8,6 +8,7 @@ export default function StudentDetailsModal({
   seatNumber,
   seats,
   plans,
+  offers,
   onClose,
   onDelete,
   onRefresh,
@@ -18,8 +19,11 @@ export default function StudentDetailsModal({
 
   const [showHistory, setShowHistory] = useState(false);
 
-  async function handleToggleHistory() {
-    if (!showHistory && payments.length === 0) {
+  const [showOffers, setShowOffers] = useState(false);
+  const [offerLoading, setOfferLoading] = useState(false);
+
+  useEffect(() => {
+    async function loadPayments() {
       const res = await fetch(
         `/api/bookings/${booking._id}/payments`
       );
@@ -31,7 +35,73 @@ export default function StudentDetailsModal({
       }
     }
 
+    loadPayments();
+  }, [booking._id]);
+
+  async function handleToggleHistory() {
     setShowHistory(!showHistory);
+  }
+
+  const availableOffers = useMemo(() => {
+    const today = new Date();
+
+    return offers.filter((offer) => {
+      const samePlan =
+        String(offer.planId?._id || offer.planId) ===
+        String(booking.planId?._id || booking.planId);
+
+      const validFrom = new Date(offer.validFrom);
+      const validUntil = new Date(offer.validUntil);
+
+      return (
+        samePlan &&
+        offer.isActive &&
+        today >= validFrom &&
+        today <= validUntil
+      );
+    });
+  }, [offers, booking.planId]);
+
+  async function handleOfferPayment(offer) {
+    const confirmed = confirm(
+      `Apply "${offer.name}" for ₹${offer.offerPrice} for ${offer.durationMonths} months?`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setOfferLoading(true);
+
+      const res = await fetch(
+        `/api/bookings/${booking._id}/pay-offer`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            offerId: offer._id,
+          }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (data.success) {
+        alert(
+          `Offer payment successful!\nCovered: ${data.startMonth} to ${data.endMonth}`
+        );
+
+        onRefresh();
+      } else {
+        alert(data.message);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong");
+    } finally {
+      setOfferLoading(false);
+    }
   }
 
   const currentMonth = useMemo(() => {
@@ -41,7 +111,27 @@ export default function StudentDetailsModal({
     ).padStart(2, "0")}`;
   }, []);
 
-  const isPaid = booking.lastPaidMonth === currentMonth;
+  const isPaid = useMemo(() => {
+    return payments.some((payment) => {
+      // Normal monthly payment
+      if (
+        payment.paymentType === "monthly" ||
+        !payment.paymentType
+      ) {
+        return payment.month === currentMonth;
+      }
+
+      // Offer payment
+      if (payment.paymentType === "offer") {
+        return (
+          payment.startMonth <= currentMonth &&
+          payment.endMonth >= currentMonth
+        );
+      }
+
+      return false;
+    });
+  }, [payments, currentMonth]);
 
   async function handleMarkPaid() {
     const res = await fetch(
@@ -62,8 +152,8 @@ export default function StudentDetailsModal({
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/50 overflow-auto  flex items-center justify-center z-50">
-        <div className="bg-white rounded-xl p-6 w-96">
+      <div className="fixed inset-0 bg-black/50 overflow-y-auto z-50 p-4">
+        <div className="bg-white rounded-xl p-6 w-full max-w-md mx-auto my-8">
           <h2 className="text-xl font-bold mb-4">
             Seat {seatNumber} Details
           </h2>
@@ -129,25 +219,128 @@ export default function StudentDetailsModal({
                     {payments.map((payment) => (
                       <div
                         key={payment._id}
-                        className="p-3 flex justify-between items-center"
+                        className="p-3 border-b last:border-b-0"
                       >
-                        <div>
-                          <p className="font-medium">
-                            {payment.month}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {new Date(
-                              payment.paidDate
-                            ).toLocaleDateString()}
-                          </p>
-                        </div>
+                        <div className="flex justify-between items-start gap-3">
 
-                        <p className="font-bold text-green-600">
-                          ₹{payment.amount}
-                        </p>
+                          <div>
+                            {payment.paymentType === "offer" ? (
+                              <>
+                                <p className="font-semibold text-purple-700">
+                                  {payment.offerId?.name ||
+                                    "Offer Payment"}
+                                </p>
+
+                                <p className="text-sm text-gray-600 mt-1">
+                                  Covers:{" "}
+                                  <span className="font-medium">
+                                    {payment.startMonth} →{" "}
+                                    {payment.endMonth}
+                                  </span>
+                                </p>
+                              </>
+                            ) : (
+                              <>
+                                <p className="font-medium">
+                                  Monthly Fee
+                                </p>
+
+                                <p className="text-sm text-gray-500">
+                                  Month: {payment.month}
+                                </p>
+                              </>
+                            )}
+
+                            <p className="text-xs text-gray-400 mt-1">
+                              Paid on{" "}
+                              {new Date(
+                                payment.paidDate
+                              ).toLocaleDateString("en-IN")}
+                            </p>
+                          </div>
+
+                          <div className="text-right">
+                            <p className="font-bold text-green-600">
+                              ₹{payment.amount}
+                            </p>
+
+                            {payment.paymentType === "offer" && (
+                              <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
+                                Offer
+                              </span>
+                            )}
+                          </div>
+
+                        </div>
                       </div>
                     ))}
                   </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="mt-4">
+            <button
+              onClick={() => setShowOffers(!showOffers)}
+              className="w-full bg-purple-600 text-white rounded-lg px-4 py-2 font-medium hover:bg-purple-700"
+            >
+              {showOffers ? "Hide Offers" : "View Available Offers"}
+            </button>
+
+            {showOffers && (
+              <div className="mt-3 space-y-3">
+                {availableOffers.length === 0 ? (
+                  <p className="text-sm text-gray-500 border rounded-lg p-3">
+                    No active offers available for this plan.
+                  </p>
+                ) : (
+                  availableOffers.map((offer) => (
+                    <div
+                      key={offer._id}
+                      className="border border-purple-200 bg-purple-50 rounded-xl p-4"
+                    >
+                      <div className="flex justify-between items-start gap-3">
+                        <div>
+                          <h3 className="font-bold">
+                            {offer.name}
+                          </h3>
+
+                          <p className="text-sm text-gray-500">
+                            {offer.durationMonths}{" "}
+                            {offer.durationMonths === 1
+                              ? "Month"
+                              : "Months"}
+                          </p>
+                        </div>
+
+                        <div className="text-right">
+                          <p className="text-sm text-gray-400 line-through">
+                            ₹{offer.regularAmount}
+                          </p>
+
+                          <p className="text-xl font-bold text-green-600">
+                            ₹{offer.offerPrice}
+                          </p>
+                        </div>
+                      </div>
+
+                      <p className="text-sm text-green-700 mt-2">
+                        Save ₹
+                        {offer.regularAmount - offer.offerPrice}
+                      </p>
+
+                      <button
+                        onClick={() => handleOfferPayment(offer)}
+                        disabled={offerLoading}
+                        className="w-full mt-3 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50"
+                      >
+                        {offerLoading
+                          ? "Processing..."
+                          : "Pay & Apply Offer"}
+                      </button>
+                    </div>
+                  ))
                 )}
               </div>
             )}

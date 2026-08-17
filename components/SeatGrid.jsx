@@ -9,6 +9,7 @@ export default function SeatGrid({
   bookings,
   plans,
   activePlanId,
+  offers,
 }) {
   const [selectedSeat, setSelectedSeat] = useState(null);
   const [viewBooking, setViewBooking] = useState(null);
@@ -194,6 +195,7 @@ export default function SeatGrid({
           seatNumber={viewBooking.seatNumber}
           seats={seats}
           plans={plans}
+          offers={offers}
           onClose={() => setViewBooking(null)}
           onDelete={handleDeleteBooking}
           onRefresh={() => {

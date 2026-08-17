@@ -12,6 +12,7 @@ export default function DashboardClient({
     stats,
     pendingStudents,
     selectedMonth,
+    offers,
 }) {
     const [activePlanId, setActivePlanId] = useState(
         plans.length > 0 ? plans[0]._id : null
@@ -66,7 +67,9 @@ Thank you.`;
                 library={library}
                 plans={plans}
                 seats={seats}
+                bookings={bookings}
                 stats={stats}
+                offers={offers}
                 selectedMonth={selectedMonth}
                 activePlanId={activePlanId}
                 onPlanChange={setActivePlanId}
@@ -77,6 +80,7 @@ Thank you.`;
                 bookings={bookings}
                 plans={plans}
                 activePlanId={activePlanId}
+                offers={offers}
             />
 
             <div className="mt-10">

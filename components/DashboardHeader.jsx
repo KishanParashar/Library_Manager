@@ -9,6 +9,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import PlanStudentsModal from "./PlanStudentsModal";
 import AddOfferModal from "./AddOfferModal";
 import ManageOffersModal from "./ManageOffersModal";
+import RegistrationListModal from "./RegistrationListModal";
 
 export default function DashboardHeader({
   library,
@@ -45,6 +46,7 @@ export default function DashboardHeader({
   const [openPlanStudents, setOpenPlanStudents] = useState(false);
   const [openOffer, setOpenOffer] = useState(false);
   const [openManageOffers, setOpenManageOffers] = useState(false);
+  const [openRegistrations, setOpenRegistrations] = useState(false);
 
   return (
     <>
@@ -129,7 +131,7 @@ export default function DashboardHeader({
           >
             + Add Offer
           </button>
-          
+
           <button
             onClick={() => setOpenSeats(true)}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg"
@@ -162,6 +164,12 @@ export default function DashboardHeader({
             className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700"
           >
             👥 Students by Plan
+          </button>
+          <button
+            onClick={() => setOpenRegistrations(true)}
+            className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700"
+          >
+            📋 Registration List
           </button>
         </div>
       </div>
@@ -259,6 +267,11 @@ export default function DashboardHeader({
             setOpenManageOffers(false);
             window.location.reload();
           }}
+        />
+      )}
+      {openRegistrations && (
+        <RegistrationListModal
+          onClose={() => setOpenRegistrations(false)}
         />
       )}
     </>
